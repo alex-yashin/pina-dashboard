@@ -1,0 +1,29 @@
+{
+    "name": "alex-yashin/pina-dashboard",
+    "keywords": ["php"],
+    "license": "MIT",
+    "homepage": "https://github.com/alex-yashin/pina-dashboard/",
+    "support": {
+        "issues": "https://github.com/alex-yashin/pina-dashboard/issues",
+        "source": "https://github.com/alex-yashin/pina-dashboard/"
+    },
+    "authors": [
+        {
+            "name": "Alex Yashin",
+            "email": "alex-yashin@ya.ru"
+        }
+    ],
+    "require": {
+        "php": ">=7.2",
+        "pinahq/framework": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "6.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "PinaDashboard\\": "src/"
+        }
+    },
+    "minimum-stability": "dev"
+}
