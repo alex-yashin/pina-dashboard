@@ -2,10 +2,12 @@
 
 namespace PinaDashboard;
 
+use Exception;
 use Pina\Access;
 use Pina\App;
 use Pina\Container\NotFoundException;
 use Pina\Http\Location;
+use Pina\Model\LinkedItem;
 use Pina\Url;
 
 class Dashboard
@@ -41,6 +43,33 @@ class Dashboard
 
         $pattern = $this->endpoints[$class];
         return $this->getBaseLocation()->location('@/' . $pattern);
+    }
+
+    /**
+     * @return LinkedItem[]
+     */
+    public function getMenu()
+    {
+        $menu = [];
+        foreach ($this->endpoints as $pattern) {
+            if (strpos($pattern, '/') !== false) {
+                continue;
+            }
+
+            $resource = $this->getBaseLocation()->resource('@/' . $pattern);
+            if (!Access::isPermitted($resource)) {
+                continue;
+            }
+
+            try {
+                $title = App::router()->run($resource, 'title');
+                if ($title) {
+                    $menu[] = new LinkedItem($title, $resource);
+                }
+            } catch (Exception $e) {
+            }
+        }
+        return $menu;
     }
 
 }
