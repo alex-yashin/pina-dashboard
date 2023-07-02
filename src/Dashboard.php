@@ -64,7 +64,7 @@ class Dashboard
             try {
                 $title = App::router()->run($resource, 'title');
                 if ($title) {
-                    $menu[] = new LinkedItem($title, $resource);
+                    $menu[] = new LinkedItem($title, '/' . $resource);
                 }
             } catch (Exception $e) {
             }
