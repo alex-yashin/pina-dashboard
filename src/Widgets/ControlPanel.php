@@ -31,10 +31,7 @@ class ControlPanel extends Control
 
     protected function drawMenu()
     {
-        /** @var Menu $menu */
-        $menu = App::make(Menu::class);
-        $menu->addClass('nav');
-        return $menu;
+        return App::make(Menu::class);
     }
 
     protected function drawLogout()
