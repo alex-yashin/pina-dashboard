@@ -13,9 +13,11 @@ class Menu extends Nav
     {
         /** @var Dashboard $dashboard */
         $dashboard = App::load(Dashboard::class);
-        $menu = $dashboard->getMenu();
-        foreach ($menu as $item) {
-            $this->add($item);
+        foreach ($dashboard as $section) {
+            $menu = $section->getMenu();
+            foreach ($menu as $item) {
+                $this->add($item);
+            }
         }
     }
 

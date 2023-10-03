@@ -2,74 +2,87 @@
 
 namespace PinaDashboard;
 
-use Exception;
 use Pina\Access;
-use Pina\App;
 use Pina\Container\NotFoundException;
 use Pina\Http\Location;
-use Pina\Model\LinkedItem;
-use Pina\Url;
+use Iterator;
+use Countable;
 
-class Dashboard
+class Dashboard implements Iterator, Countable
 {
     protected $endpoints = [];
+
+    /** @var Section[] */
+    protected $sections = [];
+
+    /** @var Location */
+    protected $location;
+
+    protected $cursor = 0;
 
     public function __construct()
     {
         Access::permit('admin', 'root');
+        $this->location = new Location('admin/en');
     }
 
-    public function register(string $pattern, $class, $context = [])
+    public function location($pattern, $params = []): Location
     {
-        App::router()->register($this->getBasePattern() . '/' . $pattern, $class, $context);
-        $this->endpoints[$class] = $pattern;
+        return $this->location->location($pattern, $params);
     }
 
-    public function getBasePattern()
+    public function section(string $title)
     {
-        return 'admin/:lang';
-    }
-
-    public function getBaseLocation(): Location
-    {
-        return new Location(Url::resource($this->getBasePattern(), ['lang' => 'en']));
+        $section = new Section($title, $this->location);
+        $this->sections[] = $section;
+        return $section;
     }
 
     public function getEndpointLocation($class): Location
     {
-        if (!isset($this->endpoints[$class])) {
-            throw new NotFoundException();
+        foreach ($this->sections as $section) {
+            if ($section->has($class)) {
+                return $section->getEndpointLocation($class);
+            }
         }
-
-        $pattern = $this->endpoints[$class];
-        return $this->getBaseLocation()->location('@/' . $pattern);
+        throw new NotFoundException();
     }
 
     /**
-     * @return LinkedItem[]
+     *
+     * @return Section
      */
-    public function getMenu()
+    public function current()
     {
-        $menu = [];
-        foreach ($this->endpoints as $pattern) {
-            if (strpos($pattern, '/') !== false) {
-                continue;
-            }
+        return $this->sections[$this->cursor];
+    }
 
-            $resource = $this->getBaseLocation()->resource('@/' . $pattern);
-            if (!Access::isPermitted($resource)) {
-                continue;
-            }
+    public function key()
+    {
+        return $this->cursor;
+    }
 
-            try {
-                $title = App::router()->run($resource, 'title');
-                if ($title) {
-                    $menu[] = new LinkedItem($title, '/' . $resource);
-                }
-            } catch (Exception $e) {
-            }
-        }
-        return $menu;
+    public function next()
+    {
+        $this->cursor++;
+    }
+
+    public function rewind()
+    {
+        $this->cursor = 0;
+    }
+
+    public function valid()
+    {
+        return isset($this->sections[$this->cursor]);
+    }
+
+    /**
+     * @return int
+     */
+    public function count()
+    {
+        return count($this->sections);
     }
 
 }
