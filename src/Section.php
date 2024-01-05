@@ -27,7 +27,10 @@ class Section
     public function register(string $pattern, $class, $context = [])
     {
         App::router()->register($this->location->resource('@') . '/' . $pattern, $class, $context);
-        $this->endpoints[$class] = $pattern;
+        if (strpos($pattern, '/') === false) {
+            //обратные ссылки на вложенные коллекции не регистрируем
+            $this->endpoints[$class] = $pattern;
+        }
     }
 
     public function has($class): bool
@@ -71,5 +74,5 @@ class Section
         }
         return $menu;
     }
-    
+
 }
