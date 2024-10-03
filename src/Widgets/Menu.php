@@ -3,7 +3,8 @@
 namespace PinaDashboard\Widgets;
 
 use Pina\App;
-use Pina\Controls\Nav;
+use Pina\Controls\Control;
+use Pina\Controls\Nav\Nav;
 use PinaDashboard\Dashboard;
 
 class Menu extends Nav
@@ -11,13 +12,12 @@ class Menu extends Nav
 
     public function __construct()
     {
+        parent::__construct();
+
         /** @var Dashboard $dashboard */
         $dashboard = App::load(Dashboard::class);
         foreach ($dashboard as $section) {
-            $menu = $section->getMenu();
-            foreach ($menu as $item) {
-                $this->add($item);
-            }
+            $section->getMenu($this);
         }
     }
 

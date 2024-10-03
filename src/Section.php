@@ -8,6 +8,8 @@ use Exception;
 use Pina\Access;
 use Pina\App;
 use Pina\Container\NotFoundException;
+use Pina\Controls\Control;
+use Pina\Controls\Nav\Nav;
 use Pina\Http\Location;
 use Pina\Model\LinkedItem;
 use Pina\Model\LinkedItemCollection;
@@ -48,12 +50,8 @@ class Section
         return $this->location->location('@/' . $pattern);
     }
 
-    /**
-     * @return LinkedItemCollection
-     */
-    public function getMenu(): LinkedItemCollection
+    public function getMenu(Nav $control)
     {
-        $menu = new LinkedItemCollection();
         foreach ($this->endpoints as $pattern) {
             if (strpos($pattern, '/') !== false) {
                 continue;
@@ -67,12 +65,11 @@ class Section
             try {
                 $title = App::router()->run($resource, 'title');
                 if ($title) {
-                    $menu->add(new LinkedItem($title, '/' . $resource));
+                    $control->appendLink($title, '/' . $resource);
                 }
             } catch (Exception $e) {
             }
         }
-        return $menu;
     }
 
 }
