@@ -2,7 +2,7 @@
 
 namespace PinaDashboard;
 
-use Pina\Access;
+use Pina\App;
 use Pina\Container\NotFoundException;
 use Pina\Http\Location;
 use Iterator;
@@ -22,8 +22,7 @@ class Dashboard implements Iterator, Countable
 
     public function __construct()
     {
-        Access::permit('admin', 'root');
-        $this->location = new Location('admin/en');
+        $this->location = App::baseUrl();
     }
 
     public function location($pattern, $params = []): Location
@@ -77,9 +76,6 @@ class Dashboard implements Iterator, Countable
         return isset($this->sections[$this->cursor]);
     }
 
-    /**
-     * @return int
-     */
     public function count()
     {
         return count($this->sections);

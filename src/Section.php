@@ -4,35 +4,49 @@
 namespace PinaDashboard;
 
 
-use Exception;
-use Pina\Access;
 use Pina\App;
 use Pina\Container\NotFoundException;
-use Pina\Controls\Control;
 use Pina\Controls\Nav\Nav;
 use Pina\Http\Location;
-use Pina\Model\LinkedItem;
-use Pina\Model\LinkedItemCollection;
+use Pina\Router\Route;
+use PinaDashboard\Menu\SectionMenu;
 
 class Section
 {
     protected $title = '';
+
     protected $location;
+
+    /** @var SectionMenu */
+    protected $menu;
+
+    protected $groups = [];
+
     protected $endpoints = [];
 
     public function __construct(string $title, Location $location)
     {
         $this->title = $title;
         $this->location = $location;
+        $this->menu = App::make(SectionMenu::class);
     }
 
-    public function register(string $pattern, $class, $context = [])
+    public function register(string $pattern, $class, $context = []): Route
     {
-        App::router()->register($this->location->resource('@') . '/' . $pattern, $class, $context);
-        if (strpos($pattern, '/') === false) {
-            //обратные ссылки на вложенные коллекции не регистрируем
+        $r = App::router()->register($this->location->resource('@') . '/' . $pattern, $class, $context)->addToMenu($this->menu);
+        foreach ($this->groups as $group) {
+            $r->permit($group);
+        }
+        if (strpos($pattern, '/') === false) {//обратные ссылки на вложенные коллекции не регистрируем
             $this->endpoints[$class] = $pattern;
         }
+        return $r;
+    }
+
+    public function permit(string $group)
+    {
+        $this->groups[] = $group;
+        return $this;
     }
 
     public function has($class): bool
@@ -52,24 +66,7 @@ class Section
 
     public function getMenu(Nav $control)
     {
-        foreach ($this->endpoints as $pattern) {
-            if (strpos($pattern, '/') !== false) {
-                continue;
-            }
-
-            $resource = $this->location->resource('@/' . $pattern);
-            if (!Access::isPermitted($resource)) {
-                continue;
-            }
-
-            try {
-                $title = App::router()->run($resource, 'title');
-                if ($title) {
-                    $control->appendLink($title, '/' . $resource);
-                }
-            } catch (Exception $e) {
-            }
-        }
+        return $this->menu;
     }
 
 }
